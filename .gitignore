@@ -1,0 +1,9 @@
+target/
+*.iml
+.idea/
+.vscode/
+.DS_Store
+
+# Personal Claude Code settings and personal agent memory stay local
+.claude/settings.local.json
+.claude/agent-memory-local/

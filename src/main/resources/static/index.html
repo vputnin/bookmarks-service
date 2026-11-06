@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bookmarks</title>
+    <style>
+        :root {
+            --ink: #1d2a3a;
+            --paper: #eef1f4;
+            --card: #ffffff;
+            --line: #cdd5de;
+            --accent: #2f6f62;
+            --muted: #5d6b7a;
+            --danger: #a3392e;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.5;
+        }
+        main { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+        h1 { font-size: 1.75rem; margin: 0 0 0.25rem; }
+        .lead { color: var(--muted); margin: 0 0 2rem; }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        label { display: grid; gap: 0.25rem; font-size: 0.875rem; color: var(--muted); }
+        label.wide { grid-column: 1 / -1; }
+        input {
+            font: inherit;
+            color: var(--ink);
+            padding: 0.5rem 0.625rem;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+        }
+        input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        button {
+            font: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 0.55rem 1rem;
+            background: var(--accent);
+            color: #fff;
+            justify-self: start;
+        }
+        #error { grid-column: 1 / -1; color: var(--danger); margin: 0; min-height: 1.5em; }
+        ul { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+        li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+        li a { color: var(--ink); font-weight: 600; text-decoration-color: var(--line); }
+        li a:hover { text-decoration-color: var(--accent); }
+        .meta { font-size: 0.85rem; color: var(--muted); }
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            padding: 0 0.5rem;
+            margin-right: 0.25rem;
+            border-radius: 999px;
+            background: #dfe9e6;
+            color: var(--accent);
+        }
+        .empty { color: var(--muted); padding: 1.5rem 0; }
+        @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Bookmarks</h1>
+    <p class="lead">Save links to read later and group them with tags.</p>
+
+    <form id="create-form">
+        <label class="wide">Link
+            <input name="url" type="url" placeholder="https://..." required>
+        </label>
+        <label>Title
+            <input name="title" required maxlength="200">
+        </label>
+        <label>Tags, comma separated
+            <input name="tags" placeholder="java, spring">
+        </label>
+        <button type="submit">Save bookmark</button>
+        <p id="error" role="alert"></p>
+    </form>
+
+    <ul id="list" aria-live="polite"></ul>
+</main>
+
+<script>
+    const list = document.getElementById('list');
+    const form = document.getElementById('create-form');
+    const errorBox = document.getElementById('error');
+
+    async function load() {
+        const response = await fetch('/api/bookmarks');
+        render(await response.json());
+    }
+
+    function render(bookmarks) {
+        list.replaceChildren();
+        if (bookmarks.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'empty';
+            empty.textContent = 'No bookmarks yet. Add your first link above.';
+            list.append(empty);
+            return;
+        }
+        for (const b of bookmarks) {
+            const item = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = b.url;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = b.title;
+
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            for (const tag of b.tags) {
+                const chip = document.createElement('span');
+                chip.className = 'tag';
+                chip.textContent = tag;
+                meta.append(chip);
+            }
+            meta.append(new Date(b.createdAt).toLocaleString());
+
+            item.append(link, meta);
+            list.append(item);
+        }
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        errorBox.textContent = '';
+        const data = new FormData(form);
+        const tags = data.get('tags').split(',').map(t => t.trim()).filter(Boolean);
+
+        const response = await fetch('/api/bookmarks', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url: data.get('url'), title: data.get('title'), tags})
+        });
+
+        if (!response.ok) {
+            const problem = await response.json();
+            errorBox.textContent = problem.detail || 'Could not save the bookmark.';
+            return;
+        }
+        form.reset();
+        load();
+    });
+
+    load();
+</script>
+</body>
+</html>
