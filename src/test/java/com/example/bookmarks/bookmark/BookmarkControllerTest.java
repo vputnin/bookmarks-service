@@ -129,6 +129,24 @@ class BookmarkControllerTest {
     }
 
     @Test
+    void deleteReturns204AndRemovesBookmark() throws Exception {
+        String location = mvc.perform(post("/api/bookmarks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"url": "https://a.dev", "title": "A"}
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getHeader("Location");
+
+        mvc.perform(delete(location))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/bookmarks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void deleteUnknownReturns404() throws Exception {
         mvc.perform(delete("/api/bookmarks/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
