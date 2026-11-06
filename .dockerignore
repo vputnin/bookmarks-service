@@ -1,0 +1,28 @@
+# Build output
+target/
+
+# VCS / CI / tooling
+.git/
+.gitignore
+.github/
+.claude/
+.mcp.json
+.idea/
+.vscode/
+*.iml
+
+# Docs (not needed in the image)
+docs/
+*.md
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files themselves
+Dockerfile
+.dockerignore
