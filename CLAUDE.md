@@ -28,11 +28,16 @@ Frontend: one file, `src/main/resources/static/index.html`, plain JS, no build s
 
 ## Workflow (follow this order)
 1. Pick the top task from **Backlog** in `TASKS.md`, move it to **In progress**.
-2. Create a branch: `git switch -c feat/<task-id>-<short-name>` (e.g. `feat/T-1-tag-filter`). Never commit to `main`.
+2. Create a branch: `git switch -c feat/<task-id>-<short-name>` (e.g. `feat/T-1-tag-filter`). Never commit to `main` (exceptions below).
 3. Implement as a vertical slice: API + service + tests + UI if the task touches UI.
 4. `mvn -q test` must be green.
 5. `/commit` → `/review` → fix findings → `/merge-to-main`.
 6. End every session with `/wrap`.
+
+Exceptions to "never commit to `main`" (no confirmation needed):
+- `/merge-to-main` commits `chore(tasks): mark T-<n> done` after the merge.
+- `/wrap`, when run on `main`, commits **only** `TASKS.md` as `chore(tasks): session log`
+  and deletes `feat/*` branches already merged into `main` (`git branch -d`, never `-D`).
 
 ## Do not
 - Edit `.claude/settings.json` (a hook blocks it; ask the human).
