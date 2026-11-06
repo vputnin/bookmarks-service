@@ -1,6 +1,7 @@
 ---
 name: wrap
-description: End-of-session wrap-up — update TASKS.md, append to the session log, propose CLAUDE.md updates, keep agent memory within limits, auto-commit TASKS.md on main and delete merged feat/* branches. Use when the user runs /wrap or says they are done for today.
+description: End-of-session wrap-up — update TASKS.md, append to the session log, propose CLAUDE.md updates, keep agent memory within limits, auto-commit TASKS.md on main and delete merged feat/* branches. Use only when the user runs /wrap.
+disable-model-invocation: true
 ---
 
 # /wrap
@@ -43,11 +44,20 @@ re-explaining anything.
 
 5. **Delete merged feature branches** — automatic, do not ask.
    - List them: `git branch --merged main --list 'feat/*' --format='%(refname:short)'`.
-   - Skip the current branch. Delete each of the rest with `git branch -d <branch>`.
+   - Skip the current branch.
+   - Skip any branch with no commits of its own: if its tip is on main's first-parent
+     line (`git rev-list --first-parent main | grep -qx "$(git rev-parse <branch>)"`),
+     it was just created from `main` and is about to be used — `--merged` lists it
+     anyway. Branches merged by `/merge-to-main` (`--no-ff`) are never on that line.
+   - Delete each remaining branch with `git branch -d <branch>`.
    - Only lower-case `-d` (git refuses unmerged branches). Never `-D`, never touch
      `fix/*` or other prefixes, never delete remote branches.
    - If `-d` refuses a branch, leave it and mention it in the summary.
 
-6. Show `git status`. If uncommitted changes remain, remind the user about `/commit`.
+6. Show `git status`. If uncommitted changes remain:
+   - on a feature branch → remind the user about `/commit`;
+   - on `main` (e.g. agent-memory edits from step 3 or an accepted CLAUDE.md change) →
+     they are outside the auto-commit; tell the user they need a branch first
+     (`git switch -c feat/<short-name>`, then `/commit`), since `/commit` refuses `main`.
 7. Finish with a 3-line summary: done, in progress, next. Mention the session-log
    commit hash (if any) and the deleted branches.

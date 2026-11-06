@@ -18,7 +18,8 @@ Merge:
    (permissions will ask the user to confirm the merge).
 7. Run `mvn -q test` on main. If it fails, tell the user immediately and suggest
    `git revert -m 1 HEAD`; do not try clever fixes on main.
-8. Offer to delete the branch with `git branch -d <branch>`.
+8. Offer to delete the branch with `git branch -d <branch>`. If the user declines, that's
+   fine: `/wrap` deletes merged `feat/*` branches automatically at the end of the session.
 9. Update `TASKS.md`: move the task to *Done* with today's date, then commit on main
    with `chore(tasks): mark T-<n> done`.
 
