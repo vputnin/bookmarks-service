@@ -4,14 +4,7 @@ Single source of truth for work in progress. Claude reads it at the start of wor
 and updates it in `/wrap`. Keep each task small enough for one branch.
 
 ## In progress
-
-### T-1 Filter bookmarks by tag
-`GET /api/bookmarks?tag=java` returns only bookmarks with that tag. Tag match is case-insensitive.
-Without the parameter the endpoint behaves as today.
-- [x] service + repository support
-- [x] controller param
-- [x] unit test + MockMvc test
-- [x] UI: clicking a tag chip filters the list; a "Show all" link resets it
+_(nothing)_
 
 ## Backlog
 
@@ -34,7 +27,14 @@ URL comparison ignores a trailing slash.
 - [ ] UI toggle
 
 ## Done
-_(nothing yet)_
+
+### T-1 Filter bookmarks by tag — done 2026-11-06
+`GET /api/bookmarks?tag=java` returns only bookmarks with that tag. Tag match is case-insensitive.
+Without the parameter the endpoint behaves as today.
+- [x] service + repository support
+- [x] controller param
+- [x] unit test + MockMvc test
+- [x] UI: clicking a tag chip filters the list; a "Show all" link resets it
 
 ## Session log
 <!-- /wrap appends one short entry per session: date, what changed, what's next. -->
