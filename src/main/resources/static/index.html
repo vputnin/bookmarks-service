@@ -111,23 +111,32 @@
     const filterTag = document.getElementById('filter-tag');
     let currentTag = null;
 
-    async function load() {
-        const url = currentTag
-            ? '/api/bookmarks?tag=' + encodeURIComponent(currentTag)
+    // Loads the list for `tag` (null = all). currentTag changes only after a
+    // successful response, so a failed request leaves the screen and state in sync.
+    async function load(tag = currentTag) {
+        const url = tag
+            ? '/api/bookmarks?tag=' + encodeURIComponent(tag)
             : '/api/bookmarks';
-        const response = await fetch(url);
-        if (!response.ok) {
+        let bookmarks;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            bookmarks = await response.json();
+        } catch (e) {
             errorBox.textContent = 'Could not load bookmarks.';
             return;
         }
+        errorBox.textContent = '';
+        currentTag = tag;
         filterBar.hidden = !currentTag;
         filterTag.textContent = currentTag || '';
-        render(await response.json());
+        render(bookmarks);
     }
 
     function filterBy(tag) {
-        currentTag = tag;
-        load();
+        load(tag);
     }
 
     document.getElementById('show-all').addEventListener('click', (event) => {

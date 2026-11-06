@@ -68,6 +68,28 @@ class BookmarkServiceTest {
     }
 
     @Test
+    void findByNullTagReturnsAllBookmarks() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag(null)).hasSize(2);
+    }
+
+    @Test
+    void findByTagMatchesAnyOfSeveralTagsNewestFirst() {
+        InMemoryBookmarkRepository repository = new InMemoryBookmarkRepository();
+        BookmarkService earlier = new BookmarkService(repository, Clock.fixed(NOW, ZoneOffset.UTC));
+        BookmarkService later = new BookmarkService(repository, Clock.fixed(NOW.plusSeconds(60), ZoneOffset.UTC));
+        earlier.create(new CreateBookmarkRequest("https://old.dev", "Old", Set.of("go", "java")));
+        later.create(new CreateBookmarkRequest("https://new.dev", "New", Set.of("spring", "java")));
+        later.create(new CreateBookmarkRequest("https://other.dev", "Other", Set.of("go")));
+
+        assertThat(later.findByTag("java"))
+                .extracting(Bookmark::title)
+                .containsExactly("New", "Old");
+    }
+
+    @Test
     void getThrowsWhenBookmarkIsMissing() {
         UUID missing = UUID.randomUUID();
 

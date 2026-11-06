@@ -107,9 +107,18 @@ class BookmarkControllerTest {
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
-    private void create(String json) throws Exception {
-        mvc.perform(post("/api/bookmarks").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isCreated());
+    @Test
+    void listWithEmptyTagParamReturnsAllBookmarks() throws Exception {
+        create("""
+                {"url": "https://spring.io", "title": "Spring", "tags": ["java"]}
+                """);
+        create("""
+                {"url": "https://go.dev", "title": "Go", "tags": ["go"]}
+                """);
+
+        mvc.perform(get("/api/bookmarks").param("tag", ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
     }
 
     @Test
@@ -123,5 +132,10 @@ class BookmarkControllerTest {
     void deleteUnknownReturns404() throws Exception {
         mvc.perform(delete("/api/bookmarks/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
+    }
+
+    private void create(String json) throws Exception {
+        mvc.perform(post("/api/bookmarks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isCreated());
     }
 }
