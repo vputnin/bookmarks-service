@@ -34,11 +34,35 @@ az provider register --namespace Microsoft.App
 az provider register --namespace Microsoft.OperationalInsights
 ```
 
-Build from source and deploy (the same command redeploys after changes):
+Variables used below:
 ```bash
-RG=<resource-group>
-ENV=<container-apps-environment>
+RG=bookmarks-rg
+ENV=bookmarks-service-env
+ACR=ca9efd84facaacr
+IMAGE="$ACR.azurecr.io/bookmarks-service:$(git rev-parse --short HEAD)"
+```
 
+Build locally, push to ACR, deploy the image (repeat to redeploy after changes).
+`--platform linux/amd64` is required when building on Apple Silicon:
+```bash
+az acr login --name "$ACR"
+docker build --platform linux/amd64 -t "$IMAGE" .
+docker push "$IMAGE"
+
+az containerapp up \
+  --name bookmarks-service \
+  --resource-group "$RG" \
+  --location westeurope \
+  --environment "$ENV" \
+  --image "$IMAGE" \
+  --registry-server "$ACR.azurecr.io" \
+  --ingress external \
+  --target-port 8080
+```
+
+Alternative: let Azure build from source. This needs ACR Tasks, which are disabled in
+some subscriptions (including ours), so the image flow above is the default:
+```bash
 az containerapp up \
   --name bookmarks-service \
   --resource-group "$RG" \
