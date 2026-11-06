@@ -111,7 +111,7 @@
     </form>
 
     <p id="filter" hidden>Tag: <strong id="filter-tag"></strong><a href="#" id="show-all">Show all</a></p>
-    <ul id="list" aria-live="polite"></ul>
+    <ul id="list" aria-live="polite" tabindex="-1"></ul>
 </main>
 
 <script>
@@ -206,7 +206,10 @@
 
     // A 404 means the bookmark is already gone, so we treat it like success
     // and just refresh; any other failure keeps the item and shows an error.
+    // After the refresh the clicked button no longer exists, so focus moves to
+    // the Delete button now at the same position (or the last one, or the list).
     async function deleteBookmark(id, button) {
+        const position = [...list.querySelectorAll('button.delete')].indexOf(button);
         button.disabled = true;
         errorBox.textContent = '';
         try {
@@ -219,7 +222,10 @@
             errorBox.textContent = 'Could not delete the bookmark.';
             return;
         }
-        load();
+        await load();
+        const buttons = list.querySelectorAll('button.delete');
+        const next = buttons[Math.min(position, buttons.length - 1)];
+        (next || list).focus();
     }
 
     form.addEventListener('submit', async (event) => {
