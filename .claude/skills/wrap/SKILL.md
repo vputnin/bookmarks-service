@@ -1,6 +1,6 @@
 ---
 name: wrap
-description: End-of-session wrap-up — update TASKS.md, append to the session log, propose CLAUDE.md updates and keep agent memory within limits. Use when the user runs /wrap or says they are done for today.
+description: End-of-session wrap-up — update TASKS.md, append to the session log, propose CLAUDE.md updates, keep agent memory within limits, auto-commit TASKS.md on main and delete merged feat/* branches. Use when the user runs /wrap or says they are done for today.
 ---
 
 # /wrap
@@ -29,5 +29,25 @@ re-explaining anything.
      leave one-line links in MEMORY.md;
    - remove entries that contradict current CLAUDE.md.
 
-4. Show `git status`. If there are uncommitted changes, remind the user about `/commit`.
-5. Finish with a 3-line summary: done, in progress, next.
+4. **Commit the session log** — automatic, do not ask.
+   This is the one allowed direct commit to `main` outside `/merge-to-main`
+   (see CLAUDE.md → Workflow).
+   - Run `git branch --show-current`.
+     - On `main`: if `git status --porcelain -- TASKS.md` is non-empty, run
+       `git commit -m "chore(tasks): session log" -- TASKS.md`.
+       The pathspec commits **only** `TASKS.md`; anything else that is staged or
+       modified stays uncommitted. Never `git add -A` / `git commit -a` here.
+     - On any other branch: do not switch branches and do not commit. `TASKS.md`
+       changes belong to that branch — remind the user to `/commit` them.
+   - Nothing changed in `TASKS.md` → skip silently.
+
+5. **Delete merged feature branches** — automatic, do not ask.
+   - List them: `git branch --merged main --list 'feat/*' --format='%(refname:short)'`.
+   - Skip the current branch. Delete each of the rest with `git branch -d <branch>`.
+   - Only lower-case `-d` (git refuses unmerged branches). Never `-D`, never touch
+     `fix/*` or other prefixes, never delete remote branches.
+   - If `-d` refuses a branch, leave it and mention it in the summary.
+
+6. Show `git status`. If uncommitted changes remain, remind the user about `/commit`.
+7. Finish with a 3-line summary: done, in progress, next. Mention the session-log
+   commit hash (if any) and the deleted branches.
