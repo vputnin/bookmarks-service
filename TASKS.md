@@ -4,17 +4,16 @@ Single source of truth for work in progress. Claude reads it at the start of wor
 and updates it in `/wrap`. Keep each task small enough for one branch.
 
 ## In progress
-_(nothing)_
-
-## Backlog
 
 ### T-1 Filter bookmarks by tag
 `GET /api/bookmarks?tag=java` returns only bookmarks with that tag. Tag match is case-insensitive.
 Without the parameter the endpoint behaves as today.
-- [ ] service + repository support
-- [ ] controller param
-- [ ] unit test + MockMvc test
-- [ ] UI: clicking a tag chip filters the list; a "Show all" link resets it
+- [x] service + repository support
+- [x] controller param
+- [x] unit test + MockMvc test
+- [x] UI: clicking a tag chip filters the list; a "Show all" link resets it
+
+## Backlog
 
 ### T-2 Delete from the UI
 The API already supports `DELETE /api/bookmarks/{id}`. Add a "Delete" button to each list item.

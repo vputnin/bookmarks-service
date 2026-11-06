@@ -43,6 +43,31 @@ class BookmarkServiceTest {
     }
 
     @Test
+    void findByTagMatchesNormalizedTag() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("Java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag(" JAVA "))
+                .extracting(Bookmark::title)
+                .containsExactly("Spring");
+    }
+
+    @Test
+    void findByTagReturnsEmptyListWhenNothingMatches() {
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag("rust")).isEmpty();
+    }
+
+    @Test
+    void findByBlankTagReturnsAllBookmarks() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag("  ")).hasSize(2);
+    }
+
+    @Test
     void getThrowsWhenBookmarkIsMissing() {
         UUID missing = UUID.randomUUID();
 

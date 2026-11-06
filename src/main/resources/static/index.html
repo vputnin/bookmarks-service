@@ -70,6 +70,12 @@
             background: #dfe9e6;
             color: var(--accent);
         }
+        button.tag { justify-self: auto; line-height: inherit; }
+        button.tag:hover { background: #cfe0db; }
+        #filter { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.9rem; }
+        #filter[hidden] { display: none; }
+        #filter strong { color: var(--ink); }
+        #filter a { color: var(--accent); margin-left: 0.5rem; }
         .empty { color: var(--muted); padding: 1.5rem 0; }
         @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
     </style>
@@ -93,6 +99,7 @@
         <p id="error" role="alert"></p>
     </form>
 
+    <p id="filter" hidden>Tag: <strong id="filter-tag"></strong><a href="#" id="show-all">Show all</a></p>
     <ul id="list" aria-live="polite"></ul>
 </main>
 
@@ -100,18 +107,42 @@
     const list = document.getElementById('list');
     const form = document.getElementById('create-form');
     const errorBox = document.getElementById('error');
+    const filterBar = document.getElementById('filter');
+    const filterTag = document.getElementById('filter-tag');
+    let currentTag = null;
 
     async function load() {
-        const response = await fetch('/api/bookmarks');
+        const url = currentTag
+            ? '/api/bookmarks?tag=' + encodeURIComponent(currentTag)
+            : '/api/bookmarks';
+        const response = await fetch(url);
+        if (!response.ok) {
+            errorBox.textContent = 'Could not load bookmarks.';
+            return;
+        }
+        filterBar.hidden = !currentTag;
+        filterTag.textContent = currentTag || '';
         render(await response.json());
     }
+
+    function filterBy(tag) {
+        currentTag = tag;
+        load();
+    }
+
+    document.getElementById('show-all').addEventListener('click', (event) => {
+        event.preventDefault();
+        filterBy(null);
+    });
 
     function render(bookmarks) {
         list.replaceChildren();
         if (bookmarks.length === 0) {
             const empty = document.createElement('li');
             empty.className = 'empty';
-            empty.textContent = 'No bookmarks yet. Add your first link above.';
+            empty.textContent = currentTag
+                ? 'No bookmarks with this tag.'
+                : 'No bookmarks yet. Add your first link above.';
             list.append(empty);
             return;
         }
@@ -126,9 +157,12 @@
             const meta = document.createElement('div');
             meta.className = 'meta';
             for (const tag of b.tags) {
-                const chip = document.createElement('span');
+                const chip = document.createElement('button');
+                chip.type = 'button';
                 chip.className = 'tag';
                 chip.textContent = tag;
+                chip.title = 'Show only "' + tag + '"';
+                chip.addEventListener('click', () => filterBy(tag));
                 meta.append(chip);
             }
             meta.append(new Date(b.createdAt).toLocaleString());

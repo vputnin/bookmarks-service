@@ -13,5 +13,8 @@ public interface BookmarkRepository {
     /** All bookmarks, newest first. */
     List<Bookmark> findAll();
 
+    /** Bookmarks carrying exactly this (already normalised) tag, newest first. */
+    List<Bookmark> findByTag(String tag);
+
     boolean deleteById(UUID id);
 }

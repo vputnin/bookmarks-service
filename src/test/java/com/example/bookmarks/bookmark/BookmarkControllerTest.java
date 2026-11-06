@@ -68,6 +68,51 @@ class BookmarkControllerTest {
     }
 
     @Test
+    void listFiltersByTagCaseInsensitively() throws Exception {
+        create("""
+                {"url": "https://spring.io", "title": "Spring", "tags": ["java", "spring"]}
+                """);
+        create("""
+                {"url": "https://go.dev", "title": "Go", "tags": ["go"]}
+                """);
+
+        mvc.perform(get("/api/bookmarks").param("tag", "JAVA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Spring"));
+    }
+
+    @Test
+    void listWithUnknownTagReturnsEmptyArray() throws Exception {
+        create("""
+                {"url": "https://go.dev", "title": "Go", "tags": ["go"]}
+                """);
+
+        mvc.perform(get("/api/bookmarks").param("tag", "rust"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void listWithoutTagReturnsAllBookmarks() throws Exception {
+        create("""
+                {"url": "https://spring.io", "title": "Spring", "tags": ["java"]}
+                """);
+        create("""
+                {"url": "https://go.dev", "title": "Go", "tags": ["go"]}
+                """);
+
+        mvc.perform(get("/api/bookmarks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    private void create(String json) throws Exception {
+        mvc.perform(post("/api/bookmarks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
     void getUnknownReturns404ProblemDetail() throws Exception {
         mvc.perform(get("/api/bookmarks/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
