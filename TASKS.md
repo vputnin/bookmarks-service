@@ -4,15 +4,7 @@ Single source of truth for work in progress. Claude reads it at the start of wor
 and updates it in `/wrap`. Keep each task small enough for one branch.
 
 ## In progress
-
-### T-2 Delete from the UI
-The API already supports `DELETE /api/bookmarks/{id}`. Add a "Delete" button to each list item.
-- [x] button per item, list refreshes after delete
-- [x] error message if the request fails
-
-Notes: a `404` on delete is treated as success (the bookmark is already gone, e.g. deleted
-in another tab), so the UI just refreshes. Any other non-2xx or a network error keeps the
-item and shows "Could not delete the bookmark."
+_(nothing)_
 
 ## Backlog
 
@@ -30,6 +22,15 @@ URL comparison ignores a trailing slash.
 - [ ] UI toggle
 
 ## Done
+
+### T-2 Delete from the UI — done 2026-11-06
+The API already supports `DELETE /api/bookmarks/{id}`. Add a "Delete" button to each list item.
+- [x] button per item, list refreshes after delete
+- [x] error message if the request fails
+
+Notes: a `404` on delete is treated as success (the bookmark is already gone, e.g. deleted
+in another tab), so the UI just refreshes. Any other non-2xx or a network error keeps the
+item and shows "Could not delete the bookmark."
 
 ### T-1 Filter bookmarks by tag — done 2026-11-06
 `GET /api/bookmarks?tag=java` returns only bookmarks with that tag. Tag match is case-insensitive.
