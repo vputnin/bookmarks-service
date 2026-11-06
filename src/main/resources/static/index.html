@@ -58,6 +58,17 @@
         #error { grid-column: 1 / -1; color: var(--danger); margin: 0; min-height: 1.5em; }
         ul { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
         li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+        li.item { display: flex; align-items: flex-start; gap: 1rem; }
+        li.item .body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        button.delete {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--line);
+            padding: 0.25rem 0.75rem;
+            font-size: 0.85rem;
+        }
+        button.delete:hover { border-color: var(--danger); }
+        button.delete:disabled { opacity: 0.5; cursor: wait; }
         li a { color: var(--ink); font-weight: 600; text-decoration-color: var(--line); }
         li a:hover { text-decoration-color: var(--accent); }
         .meta { font-size: 0.85rem; color: var(--muted); }
@@ -176,9 +187,39 @@
             }
             meta.append(new Date(b.createdAt).toLocaleString());
 
-            item.append(link, meta);
+            const body = document.createElement('div');
+            body.className = 'body';
+            body.append(link, meta);
+
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'delete';
+            remove.textContent = 'Delete';
+            remove.setAttribute('aria-label', 'Delete "' + b.title + '"');
+            remove.addEventListener('click', () => deleteBookmark(b.id, remove));
+
+            item.className = 'item';
+            item.append(body, remove);
             list.append(item);
         }
+    }
+
+    // A 404 means the bookmark is already gone, so we treat it like success
+    // and just refresh; any other failure keeps the item and shows an error.
+    async function deleteBookmark(id, button) {
+        button.disabled = true;
+        errorBox.textContent = '';
+        try {
+            const response = await fetch('/api/bookmarks/' + encodeURIComponent(id), {method: 'DELETE'});
+            if (!response.ok && response.status !== 404) {
+                throw new Error('HTTP ' + response.status);
+            }
+        } catch (e) {
+            button.disabled = false;
+            errorBox.textContent = 'Could not delete the bookmark.';
+            return;
+        }
+        load();
     }
 
     form.addEventListener('submit', async (event) => {

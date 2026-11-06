@@ -4,14 +4,13 @@ Single source of truth for work in progress. Claude reads it at the start of wor
 and updates it in `/wrap`. Keep each task small enough for one branch.
 
 ## In progress
-_(nothing)_
-
-## Backlog
 
 ### T-2 Delete from the UI
 The API already supports `DELETE /api/bookmarks/{id}`. Add a "Delete" button to each list item.
-- [ ] button per item, list refreshes after delete
-- [ ] error message if the request fails
+- [x] button per item, list refreshes after delete
+- [x] error message if the request fails
+
+## Backlog
 
 ### T-3 Reject duplicate URLs
 Creating a bookmark with a URL that already exists returns `409 Conflict` as a ProblemDetail.
