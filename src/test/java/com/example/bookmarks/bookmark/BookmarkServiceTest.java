@@ -43,6 +43,53 @@ class BookmarkServiceTest {
     }
 
     @Test
+    void findByTagMatchesNormalizedTag() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("Java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag(" JAVA "))
+                .extracting(Bookmark::title)
+                .containsExactly("Spring");
+    }
+
+    @Test
+    void findByTagReturnsEmptyListWhenNothingMatches() {
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag("rust")).isEmpty();
+    }
+
+    @Test
+    void findByBlankTagReturnsAllBookmarks() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag("  ")).hasSize(2);
+    }
+
+    @Test
+    void findByNullTagReturnsAllBookmarks() {
+        service.create(new CreateBookmarkRequest("https://spring.io", "Spring", Set.of("java")));
+        service.create(new CreateBookmarkRequest("https://go.dev", "Go", Set.of("go")));
+
+        assertThat(service.findByTag(null)).hasSize(2);
+    }
+
+    @Test
+    void findByTagMatchesAnyOfSeveralTagsNewestFirst() {
+        InMemoryBookmarkRepository repository = new InMemoryBookmarkRepository();
+        BookmarkService earlier = new BookmarkService(repository, Clock.fixed(NOW, ZoneOffset.UTC));
+        BookmarkService later = new BookmarkService(repository, Clock.fixed(NOW.plusSeconds(60), ZoneOffset.UTC));
+        earlier.create(new CreateBookmarkRequest("https://old.dev", "Old", Set.of("go", "java")));
+        later.create(new CreateBookmarkRequest("https://new.dev", "New", Set.of("spring", "java")));
+        later.create(new CreateBookmarkRequest("https://other.dev", "Other", Set.of("go")));
+
+        assertThat(later.findByTag("java"))
+                .extracting(Bookmark::title)
+                .containsExactly("New", "Old");
+    }
+
+    @Test
     void getThrowsWhenBookmarkIsMissing() {
         UUID missing = UUID.randomUUID();
 

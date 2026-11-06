@@ -37,6 +37,13 @@ class InMemoryBookmarkRepository implements BookmarkRepository {
     }
 
     @Override
+    public List<Bookmark> findByTag(String tag) {
+        return findAll().stream()
+                .filter(bookmark -> bookmark.tags().contains(tag))
+                .toList();
+    }
+
+    @Override
     public boolean deleteById(UUID id) {
         return storage.remove(id) != null;
     }
