@@ -6,6 +6,8 @@ The real point of this repo is the AI-first workflow in `.claude/`.
 ## Commands
 - Run tests: `mvn -q test`
 - Run app: `mvn spring-boot:run` → http://localhost:8080
+  - For UI checks start it from the shell in the background (`mvn -q spring-boot:run`);
+    the Browser pane's preview runner can't read this folder on macOS. Stop it afterwards.
 - Single test class: `mvn -q test -Dtest=BookmarkServiceTest`
 
 ## Stack

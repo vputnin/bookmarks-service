@@ -38,3 +38,4 @@ Without the parameter the endpoint behaves as today.
 
 ## Session log
 <!-- /wrap appends one short entry per session: date, what changed, what's next. -->
+- 2026-11-06: T-1 tag filter merged to main (API `?tag=`, UI chip filter + Show all, review fixes; 19 tests). Hooks verified. Next: T-2 Delete from the UI.
